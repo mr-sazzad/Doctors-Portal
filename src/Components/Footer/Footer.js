@@ -7,7 +7,7 @@ const Footer = () => {
         background: `url(https://i.ibb.co/hdNQKg8/footer.png)`,
         backgroundSize: 'cover'
       }}
-      className="footer past p-10 text-black"
+      className="footer past p-10 text-black "
     >
       {/* text-neutral-content */}
       {/* bg-neutral */}
