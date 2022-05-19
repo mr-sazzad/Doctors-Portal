@@ -1,24 +1,21 @@
 import React from "react";
 import {
-  useSignInWithEmailAndPassword,
-  useSignInWithGoogle,
-  useUpdateProfile
+  useCreateUserWithEmailAndPassword, useSignInWithGoogle, useUpdateProfile
 } from "react-firebase-hooks/auth";
 import { useForm } from "react-hook-form";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import auth from "../../firebase.init";
 import Loading from "../Shared/Loading";
-
-const Login = () => {
+const SignUp = () => {
   //react firebase hooks
   const [signInWithGoogle, gUser, gLoading, gError] = useSignInWithGoogle(auth);
-  const [signInWithEmailAndPassword, user, loading, error] =
-    useSignInWithEmailAndPassword(auth);
+  const [
+    createUserWithEmailAndPassword,
+    user,
+    loading,
+    error,
+  ] = useCreateUserWithEmailAndPassword(auth);
   const [updateProfile, updating, profileError] = useUpdateProfile(auth);
-  
-  //navigate user to from
-  const location = useLocation();
-
 
   // react hook form  from npm
   const {
@@ -26,29 +23,28 @@ const Login = () => {
     formState: { errors },
     handleSubmit,
   } = useForm();
-
   const navigate = useNavigate();
-
-  let from = location.state?.from?.pathname || "/";
 
   let errorMessage;
 
   if (gError || error || profileError) {
-    errorMessage = <p className="text-red-500 text-center">{error?.message || gError?.message || profileError?.message}</p>;
+    errorMessage = (
+      <p className="text-red-500 text-center">
+        {error?.message || gError?.message || profileError?.message}
+      </p>
+    );
     return;
   }
 
   if (gLoading || loading || updating) {
-    return (
-      <Loading />
-    );
+    return <Loading />;
   }
-  if (user || gUser) {
-    navigate(from, { replace: true });
+  if (gUser || user) {
+    console.log(gUser);
   }
   const onSubmit = async (data) => {
     console.log(data);
-    await signInWithEmailAndPassword(data.email, data.password);
+    await createUserWithEmailAndPassword(data.email, data.password);
     await updateProfile({ displayName: data.name });
     console.log('update done')
     navigate('/appointment')
@@ -58,9 +54,42 @@ const Login = () => {
       <div className="card w-96 bg-base-100 shadow-xl">
         <div className="card-body">
           <h2 className="text-2xl font-bold text-center text-secondary">
-            Login
+            Sign Up
           </h2>
           <form onSubmit={handleSubmit(onSubmit)}>
+            <div className="form-control w-full max-w-xs">
+              <label className="label">
+                <span className="label-text">Name</span>
+              </label>
+              <input
+                type="text"
+                name="name"
+                placeholder="Your Name"
+                className="input input-bordered w-full max-w-xs"
+                {...register("name", {
+                  required: {
+                    value: true,
+                    message: "Name is Required",
+                  },
+                  minLength: {
+                    value: 3,
+                    message: "Name must be 3 alphabet",
+                  },
+                })}
+              />
+              <label className="label">
+                {errors.name?.type === "required" && (
+                  <span className="label-text-alt text-red-500">
+                    {errors.name.message}
+                  </span>
+                )}
+                {errors.name?.type === "minLength" && (
+                  <span className="label-text-alt text-red-500">
+                    {errors.name.message}
+                  </span>
+                )}
+              </label>
+            </div>
             <div className="form-control w-full max-w-xs">
               <label className="label">
                 <span className="label-text">Email</span>
@@ -128,12 +157,12 @@ const Login = () => {
                 )}
               </label>
             </div>
-            <p className="mb-2"><small>New in Doctors ? <Link className="text-secondary underline" to="/signup">Please SignUp</Link></small></p>
+            <p className="mb-2"><small>Alrady Have an account ? <Link className="text-secondary underline" to="/login">Please Login</Link></small></p>
             {errorMessage}
             <input
               className="btn w-full max-w-xs"
               type="submit"
-              value="Login"
+              value="Sign Up"
             />
           </form>
           <div className="divider">OR</div>
@@ -149,4 +178,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default SignUp;
